@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archives | FlowOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #030303;
+            --light-bg: #f8fafc;
+        }
+
+        .dark {
+            background-color: var(--dark-bg);
+            color: #f8fafc;
+        }
+
+        .light {
+            background-color: var(--light-bg);
+            color: #030303;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            transition: background 0.4s ease;
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Custom Scrollbar for the Task Modal */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="p-6 md:p-12">
+    <div class="max-w-5xl mx-auto">
+        <header class="flex items-center justify-between mb-12">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="p-3 glass rounded-2xl hover:bg-white/10 transition-all">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </a>
+                <h1 class="text-4xl font-bold tracking-tighter">Archives</h1>
+            </div>
+            <div id="statsSummary" class="hidden md:block text-right">
+                <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Lifetime Progress</p>
+                <p id="totalSessions" class="text-xl font-bold text-blue-500">0 Sessions</p>
+            </div>
+        </header>
+
+        <div id="historyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+    </div>
+
+    <div id="taskModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="UI.closeModal()"></div>
+
+        <div
+            class="glass w-full max-w-lg rounded-[2.5rem] p-8 z-10 flex flex-col max-h-[80vh] border border-white/10 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modalDate" class="text-2xl font-bold tracking-tight text-white">Session Details</h2>
+                <button onclick="UI.closeModal()" class="p-2 hover:bg-white/5 rounded-xl transition-all">
+                    <i data-lucide="x" class="w-6 h-6 text-slate-400"></i>
+                </button>
+            </div>
+            <div id="modalContent" class="overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 z-10 border border-white/10 shadow-2xl scale-95 transition-transform duration-300"
+            id="deleteModalContent">
+            <div class="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="trash-2" class="w-8 h-8 text-red-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-2">Are you sure?</h2>
+            <p class="text-slate-400 text-center mb-8 text-sm">This action cannot be undone. This record will be
+                permanently removed.</p>
+            <div class="flex gap-3">
+                <button onclick="UI.closeDeleteModal()"
+                    class="flex-1 py-4 rounded-2xl bg-white/5 hover:bg-white/10 font-semibold transition-all">Cancel</button>
+                <button id="confirmDeleteBtn"
+                    class="flex-1 py-4 rounded-2xl bg-red-600 hover:bg-red-500 font-bold transition-all shadow-lg shadow-red-600/20">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Trigger rendering when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            UI.applyTheme();
+            UI.renderHistory();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>

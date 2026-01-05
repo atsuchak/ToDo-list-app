@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task-Todo | Task Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .toast-fade-in {
+            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .toast-fade-out {
+            animation: toastOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        :root {
+            --dark-bg: #030303;
+            --light-bg: #f8fafc;
+        }
+
+        .dark {
+            background-color: var(--dark-bg);
+            color: #f8fafc;
+        }
+
+        .light {
+            background-color: var(--light-bg);
+            color: #030303;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            transition: background 0.4s ease;
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .light .glass {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .floating-clock {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2.5rem;
+            z-index: 100;
+            font-weight: 400;
+        }
+
+        @media (max-width: 640px) {
+            .floating-clock {
+                display: none;
+            }
+        }
+
+        .sidebar-transition {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #sidebar {
+            transform: translateX(-100%);
+        }
+
+        #sidebar.sidebar-visible {
+            transform: translateX(0);
+        }
+
+        .dark #sidebar {
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(8, 8, 8, 0.95);
+        }
+
+        .light #sidebar {
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.98);
+            color: #1e293b;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        #sidebar-toggle-btn.sidebar-hidden-indicator::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 6px;
+            height: 6px;
+            background: #3b82f6;
+            border-radius: 50%;
+        }
+
+        main {
+            transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-left: 0;
+        }
+
+        @media (min-width: 1024px) {
+            #sidebar.sidebar-visible~main {
+                margin-left: 288px;
+            }
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+    <div id="notification-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+    <header class="fixed top-0 left-0 w-full z-40 bg-transparent p-4 md:px-8 md:py-6">
+        <div class="max-w-5xl mx-auto flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button id="sidebar-toggle-btn" onclick="UI.toggleSidebar()"
+                        class="p-3 glass rounded-2xl hover:bg-white/10 transition-all relative sidebar-hidden-indicator">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"><i
+                                data-lucide="zap" class="text-white w-5 h-5"></i></div>
+                        <span class="text-xl font-bold tracking-tight">Task-Todo</span>
+                    </div>
+                </div>
+                <button onclick="UI.toggleTheme()" class="p-3 glass rounded-2xl hover:bg-white/10 transition-all">
+                    <i data-lucide="moon" id="themeIcon" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="flex justify-center md:justify-end">
+                <div
+                    class="glass px-6 py-2 rounded-2xl flex items-center gap-4 border-blue-500/20 w-full md:w-auto justify-between md:justify-start">
+                    <span id="timerDisplay" class="text-xl font-medium font-mono text-blue-400">00:00:00</span>
+                    <div class="flex items-center gap-2">
+                        <button id="timerResetBtn" onclick="Logic.resetTimer()"
+                            class="p-2 text-slate-400 hover:text-slate-300 transition-all"><i data-lucide="rotate-ccw"
+                                class="w-4 h-4"></i></button>
+                        <button id="timerToggleBtn" onclick="Logic.toggleTimer()"
+                            class="p-2 bg-blue-600 rounded-xl hover:bg-blue-500 transition-all">
+                            <i data-lucide="play" id="timerIcon" class="w-4 h-4 text-white fill-current"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside id="sidebar"
+        class="sidebar-transition w-72 h-full fixed top-0 left-0 border-r backdrop-blur-xl flex flex-col p-8 pt-32 z-30">
+        <nav class="space-y-4">
+            <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2">Menu</p>
+            <button onclick="UI.switchView('flow')"
+                class="nav-item w-full flex items-center gap-4 px-5 py-4 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-500/20 transition-all">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tasks
+            </button>
+            <button onclick="UI.switchView('history')"
+                class="nav-item w-full flex items-center gap-4 px-5 py-4 rounded-2xl opacity-50 hover:opacity-100 transition-all">
+                <i data-lucide="calendar" class="w-5 h-5"></i> Archive
+            </button>
+        </nav>
+        <div class="mt-10 flex-1">
+            <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-2 mb-4">Activity Track</p>
+            <div id="tagList" class="space-y-2 px-2"></div>
+        </div>
+        <div class="glass p-5 rounded-3xl mt-auto">
+            <p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Current Streak</p>
+            <div class="flex items-center gap-2">
+                <i data-lucide="flame" class="text-orange-500 w-5 h-5"></i>
+                <span class="text-xl font-bold" id="streakDisplay">0 Days</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6 md:p-12 pt-48 md:pt-56 transition-all duration-400">
+        <div class="max-w-5xl mx-auto">
+            <section id="view-flow" class="view-section active">
+                <div class="flex flex-col md:flex-row gap-6 md:gap-8 mb-8 md:mb-12 md:items-end justify-between">
+                    <div>
+                        <h2 id="dateLabel"
+                            class="text-blue-500 font-semibold text-xs md:text-sm mb-1 md:mb-2 uppercase tracking-widest">
+                            ---</h2>
+                        <h1 class="text-4xl md:text-5xl font-bold tracking-tighter">Daily Tasks</h1>
+                    </div>
+                    <div class="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] min-w-[180px]">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Focus Score</span>
+                            <span id="scorePercentage" class="text-blue-500 font-bold">0%</span>
+                        </div>
+                        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                            <div id="scoreFill" class="bg-blue-600 h-full transition-all duration-700"
+                                style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="glass p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] flex flex-col gap-3 mb-8 md:mb-10 shadow-2xl border-white/10">
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="topicInput" placeholder="Add topic..."
+                            class="flex-1 bg-transparent py-2 px-4 text-lg md:text-xl outline-none min-w-0">
+                        <button onclick="Logic.add()"
+                            class="bg-blue-600 hover:bg-blue-500 w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all">
+                            <i data-lucide="plus" class="text-white w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="descInput" placeholder="Add description (optional)..."
+                        class="bg-transparent px-4 text-sm text-slate-400 outline-none border-t border-white/5 pt-3">
+                </div>
+
+                <div id="flowList" class="space-y-3 md:space-y-4"></div>
+            </section>
+        </div>
+    </main>
+
+    <div id="liveClock" class="floating-clock glass flex items-center gap-3">
+        <span id="clockTime" class="text-2xl font-medium">00:00:00</span>
+        <span id="clockAMPM" class="text-blue-500 text-xs font-bold">--</span>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 z-10 border border-white/10 shadow-2xl scale-95 transition-transform duration-300"
+            id="deleteModalContent">
+            <div class="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="trash-2" class="w-8 h-8 text-red-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-2">Are you sure?</h2>
+            <p class="text-slate-400 text-center mb-8 text-sm">This action cannot be undone. This record will be
+                permanently removed.</p>
+            <div class="flex gap-3">
+                <button onclick="UI.closeDeleteModal()"
+                    class="flex-1 py-4 rounded-2xl bg-white/5 hover:bg-white/10 font-semibold transition-all">Cancel</button>
+                <button id="confirmDeleteBtn"
+                    class="flex-1 py-4 rounded-2xl bg-red-600 hover:bg-red-500 font-bold transition-all shadow-lg shadow-red-600/20">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
