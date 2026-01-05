@@ -52,13 +52,35 @@ const UI = {
     toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         if (!sidebar) return;
+
         const isVisible = sidebar.classList.contains('sidebar-visible');
+
         if (isVisible) {
+            // Close sidebar
             sidebar.classList.remove('sidebar-visible');
             this.toggleSidebarIndicator(false);
+            // Remove the global click listener
+            document.removeEventListener('click', UI.handleOutsideClick);
         } else {
+            // Open sidebar
             sidebar.classList.add('sidebar-visible');
             this.toggleSidebarIndicator(true);
+
+            // Add the global click listener after a tiny delay to avoid 
+            // the current click event triggering the close logic immediately
+            setTimeout(() => {
+                document.addEventListener('click', UI.handleOutsideClick);
+            }, 10);
+        }
+    },
+
+    handleOutsideClick(event) {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        
+        // If the click is NOT on the sidebar and NOT on the toggle button, close the sidebar
+        if (sidebar && !sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+            UI.toggleSidebar();
         }
     },
 
@@ -108,45 +130,42 @@ const UI = {
 
         const sessions = AppState.db.sessions;
         const dates = Object.keys(sessions).sort().reverse();
-        
+
         if (dates.length === 0) {
             streakDisplay.textContent = `0 Days`;
             return;
         }
 
         let streak = 0;
-        let checkDate = new Date(); // Start checking from right now
+        let checkDate = new Date(); 
         checkDate.setHours(0, 0, 0, 0);
 
-        // 1. Check if the most recent entry is either today or yesterday
-        // If the latest entry is older than yesterday, the streak is broken (0)
-        const latestEntry = new Date(dates[0]);
+        const latestEntryString = dates[0];
+        const latestEntry = new Date(latestEntryString);
         latestEntry.setHours(0, 0, 0, 0);
-        
+
         const diffToLatest = Math.floor((checkDate - latestEntry) / (1000 * 60 * 60 * 24));
-        
+
         if (diffToLatest > 1) {
             streakDisplay.textContent = `0 Days`;
             return;
         }
 
-        // 2. Count backwards to find consecutive days
         for (let i = 0; i < dates.length; i++) {
             const entryDate = new Date(dates[i]);
             entryDate.setHours(0, 0, 0, 0);
-            
+
             const diff = Math.floor((checkDate - entryDate) / (1000 * 60 * 60 * 24));
-            
+
             if (diff <= 1) {
                 streak++;
-                // Move our "check" reference to the day before this entry to keep it consecutive
                 checkDate = new Date(entryDate);
                 checkDate.setDate(checkDate.getDate() - 1);
             } else {
                 break;
             }
         }
-        
+
         streakDisplay.textContent = `${streak} Day${streak !== 1 ? 's' : ''}`;
     },
 
@@ -170,7 +189,7 @@ const UI = {
 
         let colorClass, iconColor, iconBg, iconName, title;
 
-        switch(type) {
+        switch (type) {
             case "red":
                 colorClass = "border-red-500";
                 iconColor = "text-red-400";
@@ -335,13 +354,13 @@ const UI = {
         const modal = document.getElementById('deleteModal');
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         if (!modal || !confirmBtn) return;
-        
+
         modal.classList.remove('hidden');
         setTimeout(() => document.getElementById('deleteModalContent').classList.remove('scale-95'), 10);
-        
+
         const newConfirmBtn = confirmBtn.cloneNode(true);
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-        
+
         newConfirmBtn.addEventListener('click', () => {
             confirmCallback();
             this.closeDeleteModal();
@@ -367,15 +386,15 @@ const Logic = {
         const taskText = tInput.value.trim();
 
         if (!AppState.db.sessions[AppState.currentDate]) AppState.db.sessions[AppState.currentDate] = [];
-        AppState.db.sessions[AppState.currentDate].push({ 
-            text: taskText, 
-            desc: dInput ? dInput.value : '', 
-            done: false 
+        AppState.db.sessions[AppState.currentDate].push({
+            text: taskText,
+            desc: dInput ? dInput.value : '',
+            done: false
         });
 
         tInput.value = '';
         if (dInput) dInput.value = '';
-        
+
         AppState.save();
         UI.renderFlow();
         UI.showNotification(`"${taskText}" added to your flow.`, "blue");
@@ -384,14 +403,13 @@ const Logic = {
     toggle(idx) {
         const task = AppState.db.sessions[AppState.currentDate][idx];
         task.done = !task.done;
-        
-        // Show notification based on new status
+
         if (task.done) {
             UI.showNotification(`Great job! "${task.text}" completed.`, "green");
         } else {
             UI.showNotification(`"${task.text}" marked as active again.`, "orange");
         }
-        
+
         AppState.save();
         UI.renderFlow();
     },

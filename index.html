@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Toast Animations */
         .toast-fade-in {
             animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
@@ -89,16 +90,26 @@
             }
         }
 
+        /* FIX: Sidebar now overlays content */
         .sidebar-transition {
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #sidebar {
+            position: fixed;
+            /* Keep it fixed so it doesn't push others */
+            top: 0;
+            left: 0;
+            z-index: 50;
+            /* Higher than main content */
+            height: 100vh;
             transform: translateX(-100%);
         }
 
         #sidebar.sidebar-visible {
             transform: translateX(0);
+            box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+            /* Adds depth when open */
         }
 
         .dark #sidebar {
@@ -131,20 +142,31 @@
             border-radius: 50%;
         }
 
+        /* FIX: Main content stays centered and does not move */
         main {
-            transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-left: 0;
+            width: 100%;
+            margin-left: 0 !important;
+            transition: filter 0.4s ease;
+            /* Transition for the dim effect */
         }
 
-        @media (min-width: 1024px) {
-            #sidebar.sidebar-visible~main {
-                margin-left: 288px;
-            }
+        /* Optional: Dims the main content when sidebar is open */
+        #sidebar.sidebar-visible~main {
+            filter: brightness(0.6) blur(2px);
+            pointer-events: none;
+            /* Prevents interaction while sidebar is open */
+        }
+
+        .light footer {
+            background-color: #ffffff;
+            /* Clean white background */
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            /* Softer border for light mode */
         }
     </style>
 </head>
 
-<body class="flex h-screen overflow-hidden">
+<body class="flex flex-col min-h-screen overflow-x-hidden">
     <div id="notification-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-3 pointer-events-none"></div>
     <header class="fixed top-0 left-0 w-full z-40 bg-transparent p-4 md:px-8 md:py-6">
         <div class="max-w-5xl mx-auto flex flex-col gap-4">
@@ -273,6 +295,60 @@
             </div>
         </div>
     </div>
+
+    <footer
+        class="mt-auto border-t border-white/5 py-8 px-6 bg-black/20 backdrop-blur-md transition-colors duration-500">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-center md:text-left order-2 md:order-1">
+                <p class="text-slate-500 text-xs sm:text-sm font-medium tracking-wide">
+                    &copy; 2025 <span class="text-blue-500 font-bold">Ahnaf Tajwar Suchak</span>. All rights reserved.
+                </p>
+            </div>
+            <div class="flex items-center space-x-6 order-1 md:order-2">
+                <a target="_blank" href="https://github.com/atsuchak"
+                    class="text-slate-500 hover:text-blue-400 transition-all duration-300 transform hover:scale-110"
+                    title="GitHub">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                        </path>
+                    </svg>
+                </a>
+                <a target="_blank" href="https://www.linkedin.com/in/atsuchak/"
+                    class="text-slate-500 hover:text-blue-400 transition-all duration-300 transform hover:scale-110"
+                    title="LinkedIn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                        <rect x="2" y="9" width="4" height="12"></rect>
+                        <circle cx="4" cy="4" r="2"></circle>
+                    </svg>
+                </a>
+                <a target="_blank" href="mailto:ahnaftajwarsuchak@gmail.com"
+                    class="text-slate-500 hover:text-blue-400 transition-all duration-300 transform hover:scale-110"
+                    title="Email">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </a>
+                <a target="_blank" href="https://atsuchak.me"
+                    class="text-slate-500 hover:text-blue-400 transition-all duration-300 transform hover:scale-110"
+                    title="Website">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
 
     <script src="app.js"></script>
 </body>
