@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasked-Todo | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Shared Styles from index.html */
+        :root {
+            --dark-bg: #030303;
+            --light-bg: #f8fafc;
+        }
+
+        .dark {
+            background-color: var(--dark-bg);
+            color: #f8fafc;
+        }
+
+        .light {
+            background-color: var(--light-bg);
+            color: #030303;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            transition: background 0.4s ease;
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .light .glass {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Toast Animations */
+        .toast-fade-in {
+            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .toast-fade-out {
+            animation: toastOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen overflow-x-hidden flex items-center justify-center p-4">
+    <div id="notification-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+
+    <div class="glass w-full max-w-md rounded-[2.5rem] p-8 md:p-10 shadow-2xl border-white/10 relative overflow-hidden">
+
+        <!-- Decoration -->
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none">
+        </div>
+        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl pointer-events-none">
+        </div>
+
+        <div class="text-center mb-8 relative z-10">
+            <div
+                class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/30">
+                <i data-lucide="zap" class="text-white w-8 h-8"></i>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight mb-2">Welcome Back</h1>
+            <p class="text-slate-500 text-sm">Sign in to sync your tasks across devices.</p>
+        </div>
+
+        <div id="authForms" class="relative z-10">
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-4" onsubmit="event.preventDefault(); AuthUI.handleLogin();">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Email</label>
+                    <div
+                        class="glass rounded-xl flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-blue-500/50 transition-all">
+                        <i data-lucide="mail" class="w-5 h-5 text-slate-500"></i>
+                        <input type="email" id="loginEmail" placeholder="name@example.com"
+                            class="bg-transparent border-none outline-none w-full text-sm placeholder:text-slate-600"
+                            required>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Password</label>
+                    <div
+                        class="glass rounded-xl flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-blue-500/50 transition-all">
+                        <i data-lucide="lock" class="w-5 h-5 text-slate-500"></i>
+                        <input type="password" id="loginPassword" placeholder="••••••••"
+                            class="bg-transparent border-none outline-none w-full text-sm placeholder:text-slate-600"
+                            required>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="button" onclick="AuthUI.openResetModal()"
+                        class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Forgot Password?</button>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                    <span>Sign In</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+
+            <!-- Signup Form (Hidden by default) -->
+            <form id="signupForm" class="space-y-4 hidden" onsubmit="event.preventDefault(); AuthUI.handleSignup();">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Email</label>
+                    <div
+                        class="glass rounded-xl flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-blue-500/50 transition-all">
+                        <i data-lucide="mail" class="w-5 h-5 text-slate-500"></i>
+                        <input type="email" id="signupEmail" placeholder="name@example.com"
+                            class="bg-transparent border-none outline-none w-full text-sm placeholder:text-slate-600"
+                            required>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Password</label>
+                    <div
+                        class="glass rounded-xl flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-blue-500/50 transition-all">
+                        <i data-lucide="lock" class="w-5 h-5 text-slate-500"></i>
+                        <input type="password" id="signupPassword" placeholder="Create a password"
+                            class="bg-transparent border-none outline-none w-full text-sm placeholder:text-slate-600"
+                            required>
+                    </div>
+                </div>
+                <!-- Simple confirmation that we will send email verification -->
+                <p class="text-xs text-slate-500 px-1">We'll send a verification email to this address.</p>
+
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                    <span>Create Account</span>
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                </button>
+            </form>
+
+            <div class="relative my-8">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-white/10"></div>
+                </div>
+                <div class="relative flex justify-center text-xs uppercase">
+                    <span
+                        class="bg-[#030303] px-2 text-slate-500 dark:bg-[#030303] light:bg-[#f8fafc] parent-bg-match">Or
+                        continue with</span>
+                </div>
+            </div>
+
+            <button onclick="AuthUI.handleGoogleLogin()"
+                class="w-full glass hover:bg-white/5 border border-white/10 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 group">
+                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4" />
+                    <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853" />
+                    <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05" />
+                    <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335" />
+                </svg>
+                <span>Google</span>
+            </button>
+
+            <div class="mt-8 text-center">
+                <p id="toggleText" class="text-sm text-slate-500">
+                    Don't have an account?
+                    <button onclick="AuthUI.toggleForm()" class="text-blue-500 font-bold hover:underline ml-1">Sign
+                        Up</button>
+                </p>
+                <a href="index.html"
+                    class="inline-block mt-4 text-xs text-slate-600 hover:text-slate-400 transition-colors">
+                    ← Back to Guest Mode
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div id="resetModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="AuthUI.closeResetModal()"></div>
+        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 z-10 border border-white/10 shadow-2xl scale-95 transition-transform duration-300"
+            id="resetModalContent">
+            <div class="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="key-round" class="w-8 h-8 text-blue-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-2">Reset Password</h2>
+            <p class="text-slate-400 text-center mb-6 text-sm">Enter your email to receive a password reset link.</p>
+
+            <form onsubmit="event.preventDefault(); AuthUI.handleReset();">
+                <div class="space-y-2 mb-6">
+                    <div
+                        class="glass rounded-xl flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-blue-500/50 transition-all">
+                        <i data-lucide="mail" class="w-5 h-5 text-slate-500"></i>
+                        <input type="email" id="resetEmail" placeholder="name@example.com"
+                            class="bg-transparent border-none outline-none w-full text-sm placeholder:text-slate-600"
+                            required>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="AuthUI.closeResetModal()"
+                        class="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 font-semibold transition-all">Cancel</button>
+                    <button type="submit"
+                        class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold transition-all shadow-lg shadow-blue-600/20">Send
+                        Link</button>
+                </div>
+            </form>
+
+            <!-- Manual Verification Section (Hidden by default) -->
+            <div id="manualVerifySection" class="hidden mt-6 pt-6 border-t border-white/10">
+                <p class="text-xs text-slate-400 mb-2">Network blocking the link? Paste it here:</p>
+                <form onsubmit="event.preventDefault(); AuthUI.handleManualVerify();" class="space-y-3">
+                    <div
+                        class="glass rounded-xl flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-green-500/50 transition-all">
+                        <i data-lucide="link" class="w-5 h-5 text-slate-500"></i>
+                        <input type="text" id="manualLink" placeholder="https://tasked-todo..."
+                            class="bg-transparent border-none outline-none w-full text-sm placeholder:text-slate-600"
+                            required>
+                    </div>
+                    <button type="submit"
+                        class="w-full py-3 rounded-xl bg-green-600 hover:bg-green-500 font-bold transition-all shadow-lg shadow-green-600/20">
+                        Verify & Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script src="auth.js"></script>
+    <script>
+        // Check for Magic Link immediately
+        if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
+            Auth.handleMagicLink().then((user) => {
+                if (user) {
+                    // Success!
+                    // UI notification technically won't be seen long if we redirect, but let's try
+                    // We can reuse the AuthUI or create a temp notification
+                    alert("Successfully verified! Logging you in...");
+                    // onAuthStateChanged in auth.js will handle the redirect to index.html
+                }
+            }).catch(err => {
+                alert("Error signing in: " + err.message);
+            });
+        }
+
+        // Init Icons
+        lucide.createIcons();
+
+        // Check Theme
+        const savedTheme = JSON.parse(localStorage.getItem('flow_os_v3'))?.theme || 'dark';
+        document.documentElement.className = savedTheme;
+
+        // UI Logic specifically for Login Page
+        const AuthUI = {
+            isLogin: true,
+
+            toggleForm() {
+                this.isLogin = !this.isLogin;
+                const loginForm = document.getElementById('loginForm');
+                const signupForm = document.getElementById('signupForm');
+                const toggleText = document.getElementById('toggleText');
+                const title = document.querySelector('h1');
+                const subtitle = document.querySelector('p.text-slate-500');
+
+                if (this.isLogin) {
+                    loginForm.classList.remove('hidden');
+                    signupForm.classList.add('hidden');
+                    title.textContent = "Welcome Back";
+                    subtitle.textContent = "Sign in to sync your tasks across devices.";
+                    toggleText.innerHTML = `Don't have an account? <button onclick="AuthUI.toggleForm()" class="text-blue-500 font-bold hover:underline ml-1">Sign Up</button>`;
+                } else {
+                    loginForm.classList.add('hidden');
+                    signupForm.classList.remove('hidden');
+                    title.textContent = "Create Account";
+                    subtitle.textContent = "Join Tasked-Todo and start organizing.";
+                    toggleText.innerHTML = `Already have an account? <button onclick="AuthUI.toggleForm()" class="text-blue-500 font-bold hover:underline ml-1">Sign In</button>`;
+                }
+            },
+
+            async handleLogin() {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                try {
+                    await Auth.login(email, password);
+                } catch (error) {
+                    UI.showNotification(error.message, "red");
+                }
+            },
+
+            async handleSignup() {
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                try {
+                    await Auth.signup(email, password);
+                } catch (error) {
+                    UI.showNotification(error.message, "red");
+                }
+            },
+
+            async handleGoogleLogin() {
+                try {
+                    await Auth.loginGoogle();
+                } catch (error) {
+                    UI.showNotification(error.message, "red");
+                }
+            },
+
+            openResetModal() {
+                const modal = document.getElementById('resetModal');
+                const content = document.getElementById('resetModalContent');
+                modal.classList.remove('hidden');
+                setTimeout(() => content.classList.remove('scale-95'), 10);
+            },
+
+            closeResetModal() {
+                const modal = document.getElementById('resetModal');
+                const content = document.getElementById('resetModalContent');
+                content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            },
+
+            async handleReset() {
+                const email = document.getElementById('resetEmail').value;
+                try {
+                    await Auth.resetPassword(email);
+                    UI.showNotification("Link sent! If it doesn't open, copy & paste it below.", "blue");
+                    // Show manual entry instead of closing
+                    document.getElementById('manualVerifySection').classList.remove('hidden');
+                } catch (error) {
+                    UI.showNotification(error.message, "red");
+                }
+            },
+
+            async handleManualVerify() {
+                const email = document.getElementById('resetEmail').value;
+                const link = document.getElementById('manualLink').value;
+                try {
+                    const user = await Auth.verifyManualLink(email, link);
+                    if (user) {
+                        alert("Successfully verified! Logging you in...");
+                        // Redirect handled by onAuthStateChanged
+                    }
+                } catch (error) {
+                    UI.showNotification(error.message, "red");
+                }
+            }
+        };
+
+        // Reuse the UI.showNotification from main app logic (simplified version for here)
+        const UI = {
+            showNotification(message, type = "blue") {
+                const container = document.getElementById('notification-container');
+                let colorClass, iconColor, iconBg, iconName, title;
+
+                switch (type) {
+                    case "red":
+                        colorClass = "border-red-500";
+                        iconColor = "text-red-400";
+                        iconBg = "bg-red-500/20";
+                        iconName = "alert-circle";
+                        title = "Error";
+                        break;
+                    default: // blue
+                        colorClass = "border-blue-500";
+                        iconColor = "text-blue-400";
+                        iconBg = "bg-blue-500/20";
+                        iconName = "check-circle-2";
+                        title = "Success";
+                }
+
+                const toast = document.createElement('div');
+                toast.className = `glass px-6 py-4 rounded-2xl border-l-4 ${colorClass} flex items-center gap-3 shadow-2xl toast-fade-in pointer-events-auto`;
+                toast.innerHTML = `
+                    <div class="w-8 h-8 ${iconBg} rounded-lg flex items-center justify-center">
+                        <i data-lucide="${iconName}" class="w-5 h-5 ${iconColor}"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white">${title}</p>
+                        <p class="text-xs text-slate-400">${message}</p>
+                    </div>
+                `;
+
+                container.appendChild(toast);
+                lucide.createIcons();
+                setTimeout(() => {
+                    toast.classList.replace('toast-fade-in', 'toast-fade-out');
+                    setTimeout(() => toast.remove(), 400);
+                }, 3000);
+            }
+        };
+    </script>
+</body>
+
+</html>
