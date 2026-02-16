@@ -1,3 +1,4 @@
-config.js
+# config.js (Uncomment to hide again if needed, but it breaks hosting if missing)
+
 .DS_Store
 node_modules/
