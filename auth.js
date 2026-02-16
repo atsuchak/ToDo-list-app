@@ -1,11 +1,5 @@
-const firebaseConfig = {
-    apiKey: "AIzaSyCby41xaHE4PRctNKNV8kB4paeCfRwQgB8",
-    authDomain: "tasked-todo-v1-app.web.app",
-    projectId: "tasked-todo-v1-app",
-    storageBucket: "tasked-todo-v1-app.firebasestorage.app",
-    messagingSenderId: "939919890388",
-    appId: "1:939919890388:web:d93ced08bf26259a94e841"
-};
+// firebaseConfig is now loaded from config.js
+// Make sure config.js is included in your HTML before this file.
 
 // Initialize Firebase
 if (!firebase.apps.length) {
